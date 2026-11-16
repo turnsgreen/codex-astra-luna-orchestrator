@@ -58,7 +58,7 @@ function Read-Plan {
     [Console]::WriteLine('  4) Plus (max 2 subagents) - GPT-6 Luna (max) orchestrates, GPT-6 Luna (medium) executes, GPT-6 Astra (low) reviews')
     [Console]::WriteLine('  5) GPT6-SolMax-LunaMax - GPT-6.1 Sol (max) orchestrates and reviews, GPT-6 Luna (max) executes')
     [Console]::WriteLine('  6) GPT6-SolMedium-LunaMax - GPT-6.1 Sol (medium) orchestrates and reviews, GPT-6 Luna (max) executes')
-    [Console]::WriteLine('  7) gpt-agy - your GPT model orchestrates and reviews, Antigravity CLI executes')
+    [Console]::WriteLine('  7) gpt-agy - your GPT model orchestrates, Gemini 3.8 Flash (high) executes, GPT-6.1 Sol (medium) reviews')
 
     while ($true) {
         [Console]::Write('Select Profile [1-7] (default 1): ')

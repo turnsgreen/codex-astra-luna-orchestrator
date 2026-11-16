@@ -22,7 +22,7 @@ ROLE_INSTRUCTIONS = {
 }
 BRIDGE = Path(__file__).resolve().parent
 WORKSPACE = BRIDGE.parent.parent
-MODEL = os.environ.get("AGY_MODEL", "gemini-3.8-flash-medium")
+MODEL = os.environ.get("AGY_MODEL", "gemini-3.8-flash-high")
 AGY = os.environ.get("AGY_EXECUTABLE", "agy")
 AGY_TIMEOUT = 150
 TEST_TIMEOUT = 90

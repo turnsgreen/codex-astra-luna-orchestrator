@@ -6,8 +6,9 @@ GPT-6 Luna execution subagents, and an independent reviewer.
 The Sol profiles use `gpt-6.1-sol` for both the orchestrator and reviewer.
 
 This fork also includes [the `gpt-agy` profile](guides/gpt-agy.md). Select
-option **7** to use your Codex GPT model for orchestration and independent
-review, with Gemini 3.8 Flash via local Antigravity CLI for execution roles.
+option **7** to use your chosen Codex GPT model for orchestration, GPT-6.1 Sol
+Medium for independent review, and Gemini 3.8 Flash High via local Antigravity
+CLI for execution roles.
 
 ## Orchestration topology
 
@@ -140,7 +141,7 @@ The original profiles keep the `astra-orchestrator` name so the shared
 | 4 | `plus-max-2-subagents` | Luna max | Luna medium | Astra low | 2 |
 | 5 | `GPT6-SolMax-LunaMax` | Sol max | Luna max | Sol max | 4 |
 | 6 | `GPT6-SolMedium-LunaMax` | Sol medium | Luna max | Sol medium | 4 |
-| 7 | [`gpt-agy`](guides/gpt-agy.md) | Selected GPT | Antigravity CLI / Gemini 3.8 Flash | Selected GPT by default | Codex defaults for reviewer |
+| 7 | [`gpt-agy`](guides/gpt-agy.md) | Selected GPT | Antigravity CLI / Gemini 3.8 Flash High | GPT-6.1 Sol Medium | Codex defaults for reviewer |
 
 The original profiles use GPT-6 models. Execution roles are explorer, worker,
 tester, and researcher. The original profiles pin the models and reasoning

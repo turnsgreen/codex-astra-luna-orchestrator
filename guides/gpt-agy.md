@@ -1,14 +1,15 @@
 # GPT and Antigravity CLI
 
 The Codex main session plans and integrates. The local `agy` MCP server calls
-Antigravity CLI with Gemini 3.8 Flash for exploration, research, implementation,
-and test analysis. A separate native Codex reviewer reads the actual diff.
+Antigravity CLI with Gemini 3.8 Flash High for exploration, research,
+implementation, and test analysis. An independent GPT-6.1 Sol Medium reviewer
+reads the actual diff.
 
 ## Install and run
 
 1. Install a current local Codex CLI, Python 3.10+, and Antigravity CLI. Use
    `agy models` in your normal terminal to confirm you are signed in and can
-   select `gemini-3.8-flash-medium`.
+   select `gemini-3.8-flash-high`.
 2. Run `setup.ps1` on Windows or `setup.sh` on macOS/Linux. Select **7** or
    `gpt-agy` for the target repository. For an existing Codex project, merge
    the settings you still need and remove older orchestration instructions
@@ -27,9 +28,8 @@ and test analysis. A separate native Codex reviewer reads the actual diff.
    `-c 'mcp_servers.agy.tools.run_role.approval_mode="approve"'` with `codex exec`.
    This allows the configured tool to edit the checkout and run its test suites.
 4. Select any available GPT with Codex's model picker or `codex -m <model>`.
-   The reviewer inherits the selected model and effort when neither the role,
-   the spawn request, nor your `[agents]` defaults supply overrides. Set `model`
-   in `.codex/agents/reviewer.toml` to select a separate GPT for review.
+   The reviewer defaults to `gpt-6.1-sol` at `medium` reasoning effort. You can
+   change the reviewer model or effort in `.codex/agents/reviewer.toml`.
 
 For a different Antigravity model or binary, set `AGY_MODEL` or `AGY_EXECUTABLE`
 in the server's environment. You can add the following to `.codex/config.toml`
@@ -37,7 +37,7 @@ with values valid for your machine and account.
 
 ```toml
 [mcp_servers.agy.env]
-AGY_MODEL = "gemini-3.8-flash-medium"
+AGY_MODEL = "gemini-3.8-flash-high"
 ```
 
 ## Tests and permissions

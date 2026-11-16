@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -18,12 +19,13 @@ SERVER = PROFILE / "codex" / "agy" / "server.py"
 
 
 class GPTAGYProfileTests(unittest.TestCase):
-    def test_models_can_follow_the_current_gpt(self):
+    def test_root_model_is_selectable_and_reviewer_pins_sol_medium(self):
         config = tomllib.loads((PROFILE / "codex" / "config.toml").read_text())
         self.assertNotIn("model", config)
         self.assertNotIn("default_subagent_model", config["agents"])
         reviewer = tomllib.loads((PROFILE / "codex" / "agents" / "reviewer.toml").read_text())
-        self.assertNotIn("model", reviewer)
+        self.assertEqual(reviewer["model"], "gpt-6.1-sol")
+        self.assertEqual(reviewer["model_reasoning_effort"], "medium")
         self.assertEqual(reviewer["sandbox_mode"], "read-only")
 
     def test_installers_install_the_bridge_and_profile_instructions(self):
@@ -53,7 +55,9 @@ class BridgeTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("agy_bridge_under_test", SERVER)
         cls.bridge = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = cls.bridge
-        spec.loader.exec_module(cls.bridge)
+        with patch.dict(os.environ):
+            os.environ.pop("AGY_MODEL", None)
+            spec.loader.exec_module(cls.bridge)
 
     def mock_agy_result(self, **fields):
         result = {"status": "SUCCESS", "response": "Gemini reply", **fields}
@@ -68,6 +72,7 @@ class BridgeTests(unittest.TestCase):
             result = self.bridge.invoke_agy("tester", "Inspect the failure.", "unit")
         self.assertEqual(result["status"], "success")
         self.assertEqual(result["test"], evidence)
+        self.assertEqual(result["requested_model"], "gemini-3.8-flash-high")
         message = json.loads(run.call_args.kwargs["input"])
         self.assertEqual(message["event"], "user")
         self.assertIn('"exit_code": 3', message["message"]["content"])
