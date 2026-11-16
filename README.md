@@ -5,6 +5,10 @@ GPT-6 Luna execution subagents, and an independent reviewer.
 
 The Sol profiles use `gpt-6.1-sol` for both the orchestrator and reviewer.
 
+This fork also includes [the `gpt-agy` profile](guides/gpt-agy.md). Select
+option **7** to use your Codex GPT model for orchestration and independent
+review, with Gemini 3.8 Flash via local Antigravity CLI for execution roles.
+
 ## Orchestration topology
 
 The diagram shows the Astra (Pro) and Sol orchestrators. Plus uses a Luna
@@ -38,7 +42,7 @@ the reviewer uses Astra for Pro/Plus and Sol for Sol profiles.
 1. Clone this repository and enter it:
 
    ```sh
-   git clone https://github.com/donvito/codex-astra-luna-orchestrator.git
+   git clone https://github.com/turnsgreen/codex-astra-luna-orchestrator.git
    cd codex-astra-luna-orchestrator
    ```
 
@@ -68,7 +72,7 @@ the reviewer uses Astra for Pro/Plus and Sol for Sol profiles.
 
    ```text
    Target repository path: ../my-project
-   Select Profile [1-6] (default 1): 5
+   Select Profile [1-7] (default 1): 5
    ```
 
 The installer copies the selected configuration to `.codex/`, its skill to
@@ -77,6 +81,9 @@ are updated only after confirmation; existing `AGENTS.md` content is preserved.
 Codex loads project-scoped configuration only for trusted projects.
 
 ### Installed target project
+
+The following layout applies to the GPT-only profiles. See the
+[Antigravity guide](guides/gpt-agy.md) for the `gpt-agy` layout and prerequisites.
 
 If you install all three components into `../my-project`, the installer adds
 these paths alongside the project's existing files:
@@ -120,7 +127,7 @@ Implement the invoice export endpoint. Use the explorer to map the path,
 a worker to implement it, and the tester and reviewer to verify it.
 ```
 
-The skill keeps the `astra-orchestrator` name in every profile so the shared
+The original profiles keep the `astra-orchestrator` name so the shared
 `AGENTS.md` works; the Sol profiles use Sol according to their configuration.
 
 ## Profiles
@@ -133,15 +140,16 @@ The skill keeps the `astra-orchestrator` name in every profile so the shared
 | 4 | `plus-max-2-subagents` | Luna max | Luna medium | Astra low | 2 |
 | 5 | `GPT6-SolMax-LunaMax` | Sol max | Luna max | Sol max | 4 |
 | 6 | `GPT6-SolMedium-LunaMax` | Sol medium | Luna max | Sol medium | 4 |
+| 7 | [`gpt-agy`](guides/gpt-agy.md) | Selected GPT | Antigravity CLI / Gemini 3.8 Flash | Selected GPT by default | Codex defaults for reviewer |
 
-All models above are GPT-6. Execution roles are explorer, worker, tester,
-and researcher; named roles pin their models and reasoning levels independently
-of the default subagent settings. Each ready-to-copy profile lives under
-`profiles/<profile>/`.
+The original profiles use GPT-6 models. Execution roles are explorer, worker,
+tester, and researcher. The original profiles pin the models and reasoning
+levels in their named roles. Each ready-to-copy profile lives under `profiles/<profile>/`.
 
 For manual project setup, copy the selected profile's `codex/` and `agents/`
-to the target repository as `.codex/` and `.agents/`, and add this repository's
-`AGENTS.md`. For personal/global setup, copy its `codex/agents/` into
+to the target repository as `.codex/` and `.agents/`. Add the profile's `AGENTS.md`
+if it has one, or this repository's `AGENTS.md` for the original profiles. For
+personal/global setup of the original profiles, copy `codex/agents/` into
 `~/.codex/agents/`, its `agents/skills/astra-orchestrator/` into
 `~/.agents/skills/`, and **merge**, rather than replace, its `codex/config.toml`
 settings into `~/.codex/config.toml`. Do not overwrite other existing Codex
@@ -157,7 +165,8 @@ settings.
 │   ├── pro-max-2-subagents/
 │   ├── plus-max-2-subagents/
 │   ├── GPT6-SolMax-LunaMax/
-│   └── GPT6-SolMedium-LunaMax/
+│   ├── GPT6-SolMedium-LunaMax/
+│   └── gpt-agy/
 ├── guides/
 ├── scripts/
 │   └── token_usage.py
@@ -171,11 +180,12 @@ settings.
 └── LICENSE
 ```
 
-Each profile contains `codex/config.toml`, `codex/agents/*.toml`, and
-`agents/skills/astra-orchestrator/SKILL.md`.
+Each profile contains `codex/config.toml`, `codex/agents/*.toml`, and its
+workflow instructions under `agents/skills/`.
 
 ## Guides
 
+- [GPT + Antigravity CLI setup and smoke test](guides/gpt-agy.md)
 - [Pro orchestration and manual configuration](guides/full-orchestration.md)
 - [Plus profile and global setup](guides/plus-plan.md)
 - [Fast iteration](guides/fast-iteration.md) and [routine coding](guides/routine-coding.md)

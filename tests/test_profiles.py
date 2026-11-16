@@ -20,12 +20,19 @@ PREVIOUS_PROFILES = {
 }
 
 
+def run_installer(command, target, choice):
+    # Send LF explicitly so Windows subprocess pipes also work with POSIX read.
+    answers = f"{Path(target).as_posix()}\n{choice}\n\n\n\n".encode("utf-8")
+    result = subprocess.run(command, input=answers, capture_output=True, timeout=20)
+    return result.returncode, result.stdout.decode("utf-8"), result.stderr.decode("utf-8")
+
+
 class SolProfileTests(unittest.TestCase):
     def test_profile_models_and_roles(self):
         for profile, effort in PROFILES.items():
             with self.subTest(profile=profile):
                 directory = ROOT / "profiles" / profile
-                config = tomllib.loads((directory / "codex" / "config.toml").read_text())
+                config = tomllib.loads((directory / "codex" / "config.toml").read_text(encoding="utf-8"))
                 self.assertEqual(config["model"], "gpt-6.1-sol")
                 self.assertEqual(config["model_reasoning_effort"], effort)
                 self.assertEqual(config["sandbox_mode"], "workspace-write")
@@ -35,7 +42,7 @@ class SolProfileTests(unittest.TestCase):
                 self.assertEqual(config["agents"]["max_concurrent_threads_per_session"], 4)
                 for role in LUNA_ROLES:
                     agent = tomllib.loads(
-                        (directory / "codex" / "agents" / f"{role}.toml").read_text()
+                        (directory / "codex" / "agents" / f"{role}.toml").read_text(encoding="utf-8")
                     )
                     self.assertEqual(agent["name"], role)
                     self.assertEqual(agent["model"], "gpt-6-luna")
@@ -43,14 +50,14 @@ class SolProfileTests(unittest.TestCase):
                     expected_mode = "workspace-write" if role in ("worker", "tester") else "read-only"
                     self.assertEqual(agent["sandbox_mode"], expected_mode)
                 reviewer = tomllib.loads(
-                    (directory / "codex" / "agents" / "reviewer.toml").read_text()
+                    (directory / "codex" / "agents" / "reviewer.toml").read_text(encoding="utf-8")
                 )
                 self.assertEqual(reviewer["model"], "gpt-6.1-sol")
                 self.assertEqual(reviewer["model_reasoning_effort"], effort)
                 self.assertEqual(reviewer["sandbox_mode"], "read-only")
                 skill = (
                     directory / "agents" / "skills" / "astra-orchestrator" / "SKILL.md"
-                ).read_text()
+                ).read_text(encoding="utf-8")
                 self.assertIn(f"root: `gpt-6.1-sol` at `{effort}` reasoning", skill)
                 self.assertIn(
                     "explorer, worker, tester, researcher: `gpt-6-luna` at `max` reasoning",
@@ -72,13 +79,11 @@ class SolProfileTests(unittest.TestCase):
         for installer, command in installers:
             for choice, profile in choices:
                 with self.subTest(installer=installer, choice=choice), tempfile.TemporaryDirectory() as target:
-                    result = subprocess.run(
-                        command, input=f"{target}\n{choice}\n\n\n\n", text=True, capture_output=True
-                    )
-                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-                    self.assertIn("Select Profile [1-6] (default 1):", result.stdout)
-                    self.assertIn(f"profile: {profile}", result.stdout)
-                    self.assertIn(f") {profile} -", result.stdout)
+                    exit_code, stdout, stderr = run_installer(command, target, choice)
+                    self.assertEqual(exit_code, 0, stdout + stderr)
+                    self.assertIn("Select Profile [1-7] (default 1):", stdout)
+                    self.assertIn(f"profile: {profile}", stdout)
+                    self.assertIn(f") {profile} -", stdout)
                     source = ROOT / "profiles" / profile
                     for component in (
                         Path(".codex/config.toml"),
@@ -87,8 +92,8 @@ class SolProfileTests(unittest.TestCase):
                     ):
                         source_component = source / component.parts[0][1:]
                         self.assertEqual(
-                            (Path(target) / component).read_text(),
-                            (source_component / Path(*component.parts[1:])).read_text(),
+                            (Path(target) / component).read_text(encoding="utf-8"),
+                            (source_component / Path(*component.parts[1:])).read_text(encoding="utf-8"),
                         )
 
 
@@ -97,7 +102,7 @@ class PreviousProfileTests(unittest.TestCase):
         for profile, (root_model, root_effort, luna_effort, limit) in PREVIOUS_PROFILES.items():
             with self.subTest(profile=profile):
                 directory = ROOT / "profiles" / profile
-                config = tomllib.loads((directory / "codex" / "config.toml").read_text())
+                config = tomllib.loads((directory / "codex" / "config.toml").read_text(encoding="utf-8"))
                 self.assertEqual(config["model"], root_model)
                 self.assertEqual(config["model_reasoning_effort"], root_effort)
                 self.assertEqual(config["agents"]["default_subagent_model"], "gpt-6-luna")
@@ -105,18 +110,18 @@ class PreviousProfileTests(unittest.TestCase):
                 self.assertEqual(config["agents"]["max_concurrent_threads_per_session"], limit)
                 for role in LUNA_ROLES:
                     agent = tomllib.loads(
-                        (directory / "codex" / "agents" / f"{role}.toml").read_text()
+                        (directory / "codex" / "agents" / f"{role}.toml").read_text(encoding="utf-8")
                     )
                     self.assertEqual(agent["model"], "gpt-6-luna")
                     self.assertEqual(agent["model_reasoning_effort"], luna_effort)
                 reviewer = tomllib.loads(
-                    (directory / "codex" / "agents" / "reviewer.toml").read_text()
+                    (directory / "codex" / "agents" / "reviewer.toml").read_text(encoding="utf-8")
                 )
                 self.assertEqual(reviewer["model"], "gpt-6-astra")
                 self.assertEqual(reviewer["model_reasoning_effort"], "low")
                 skill = (
                     directory / "agents" / "skills" / "astra-orchestrator" / "SKILL.md"
-                ).read_text()
+                ).read_text(encoding="utf-8")
                 self.assertNotIn("gpt-5.6-luna", skill)
                 self.assertNotIn("GPT-5.6 Luna", skill)
                 self.assertIn(f"`gpt-6-luna` at `{luna_effort}` reasoning", skill)
@@ -128,12 +133,10 @@ class PreviousProfileTests(unittest.TestCase):
         for installer, command in installers:
             for choice, profile in enumerate(PREVIOUS_PROFILES, start=1):
                 with self.subTest(installer=installer, profile=profile), tempfile.TemporaryDirectory() as target:
-                    result = subprocess.run(
-                        command, input=f"{target}\n{choice}\n\n\n\n", text=True, capture_output=True
-                    )
-                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-                    self.assertIn(f"profile: {profile}", result.stdout)
-                    menu_line = next(line for line in result.stdout.splitlines() if line.startswith(f"  {choice}) "))
+                    exit_code, stdout, stderr = run_installer(command, target, choice)
+                    self.assertEqual(exit_code, 0, stdout + stderr)
+                    self.assertIn(f"profile: {profile}", stdout)
+                    menu_line = next(line for line in stdout.splitlines() if line.startswith(f"  {choice}) "))
                     self.assertIn("GPT-6 Luna", menu_line)
                     source = ROOT / "profiles" / profile
                     for component in (
@@ -143,8 +146,8 @@ class PreviousProfileTests(unittest.TestCase):
                     ):
                         source_component = source / component.parts[0][1:]
                         self.assertEqual(
-                            (Path(target) / component).read_text(),
-                            (source_component / Path(*component.parts[1:])).read_text(),
+                            (Path(target) / component).read_text(encoding="utf-8"),
+                            (source_component / Path(*component.parts[1:])).read_text(encoding="utf-8"),
                         )
 
 

@@ -1,0 +1,7 @@
+[agents]
+enabled = true
+
+[mcp_servers.agy]
+command = "python"
+args = [".codex/agy/server.py"]
+tool_timeout_sec = 300
